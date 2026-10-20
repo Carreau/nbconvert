@@ -3,7 +3,6 @@
 # Copyright (c) IPython Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-import asyncio
 import concurrent.futures
 import os
 import subprocess
@@ -178,6 +177,8 @@ class WebPDFExporter(HTMLExporter):
         )
         with temp_file:
             temp_file.write(html.encode("utf-8"))
+        import asyncio  # noqa: PLC0415
+
         try:
             pdf_data = pool.submit(asyncio.run, main(temp_file)).result()
         finally:

@@ -12,10 +12,17 @@ from traitlets import Type, Unicode, Union
 
 from .base import Preprocessor
 
-try:
-    from notebook import DEFAULT_STATIC_FILES_PATH  # type:ignore[import-not-found]
-except ImportError:
-    DEFAULT_STATIC_FILES_PATH = None
+
+def _default_static_files_path():
+    """Return the classic notebook static files path, or None if notebook is not installed.
+
+    Imported on demand: the notebook package is slow to import and only needed for custom CSS.
+    """
+    try:
+        import notebook  # type:ignore[import-not-found]  # noqa: PLC0415
+    except ImportError:
+        return None
+    return notebook.DEFAULT_STATIC_FILES_PATH
 
 
 class CSSHTMLHeaderPreprocessor(Preprocessor):
@@ -75,9 +82,10 @@ class CSSHTMLHeaderPreprocessor(Preprocessor):
         config_dir = resources["config_dir"]
         custom_css_filename = os.path.join(config_dir, "custom", "custom.css")
         if os.path.isfile(custom_css_filename):
-            if DEFAULT_STATIC_FILES_PATH and self._default_css_hash is None:
+            default_static_files_path = _default_static_files_path()
+            if default_static_files_path and self._default_css_hash is None:
                 self._default_css_hash = self._hash(
-                    os.path.join(DEFAULT_STATIC_FILES_PATH, "custom", "custom.css")
+                    os.path.join(default_static_files_path, "custom", "custom.css")
                 )
             if self._hash(custom_css_filename) != self._default_css_hash:
                 with open(custom_css_filename, encoding="utf-8") as f:

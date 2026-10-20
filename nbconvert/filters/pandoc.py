@@ -5,8 +5,6 @@ and related filters
 
 import os
 
-from pandocfilters import Image, applyJSONFilters  # type:ignore[import-untyped]
-
 from nbconvert.utils.base import NbConvertBase
 from nbconvert.utils.pandoc import pandoc
 
@@ -54,7 +52,9 @@ class ConvertExplicitlyRelativePaths(NbConvertBase):
         """Invoke the converter."""
         # If this is not set for some reason, we can't do anything,
         if self.nb_dir:
-            return applyJSONFilters([self.action], source)
+            import pandocfilters  # type:ignore[import-untyped]  # noqa: PLC0415
+
+            return pandocfilters.applyJSONFilters([self.action], source)
         return source
 
     def action(self, key, value, frmt, meta):
@@ -76,6 +76,8 @@ class ConvertExplicitlyRelativePaths(NbConvertBase):
                     filename = filename[3:]
                 ancestors = "/".join(self.ancestor_dirs[:-n_up]) + "/"
                 filename = ancestors + filename
-            return Image(attr, caption, [filename, typedef])
+            import pandocfilters  # type:ignore[import-untyped]  # noqa: PLC0415
+
+            return pandocfilters.Image(attr, caption, [filename, typedef])
         # If not image, return "no change"
         return None

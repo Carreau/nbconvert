@@ -15,12 +15,8 @@ import warnings
 from urllib.parse import quote
 from xml.etree.ElementTree import Element
 
-import bleach
-
 # defusedxml does safe(r) parsing of untrusted XML data
 from defusedxml import ElementTree
-
-from nbconvert.preprocessors.sanitize import _get_default_css_sanitizer
 
 __all__ = [
     "add_anchor",
@@ -82,6 +78,11 @@ def html2text(element):
 
 def clean_html(element):
     """Clean an html element."""
+    # Imported here: the preprocessors package pulls in nbclient/nbformat, and bleach is slow to import.
+    import bleach  # noqa: PLC0415
+
+    from nbconvert.preprocessors.sanitize import _get_default_css_sanitizer  # noqa: PLC0415
+
     element = element.decode() if isinstance(element, bytes) else str(element)
     kwargs = {}
     css_sanitizer = _get_default_css_sanitizer()

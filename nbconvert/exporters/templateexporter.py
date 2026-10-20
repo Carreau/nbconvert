@@ -39,10 +39,20 @@ ROOT = os.path.dirname(__file__)
 DEV_MODE = os.path.exists(os.path.join(ROOT, "../../.git"))
 
 
+def _lazy_filter(name):
+    """Forward to ``nbconvert.filters.<name>`` when called, so the markdown filters load on first use."""
+
+    def _filter(*args, **kwargs):
+        return getattr(filters, name)(*args, **kwargs)
+
+    _filter.__name__ = name
+    return _filter
+
+
 default_filters = {
     "indent": filters.indent,
-    "markdown2html": filters.markdown2html,
-    "markdown2asciidoc": filters.markdown2asciidoc,
+    "markdown2html": _lazy_filter("markdown2html"),
+    "markdown2asciidoc": _lazy_filter("markdown2asciidoc"),
     "ansi2html": filters.ansi2html,
     "filter_data_type": filters.DataTypeFilter,
     "get_lines": filters.get_lines,
@@ -50,8 +60,8 @@ default_filters = {
     "highlight2latex": filters.Highlight2Latex,
     "ipython2python": filters.ipython2python,
     "posix_path": filters.posix_path,
-    "markdown2latex": filters.markdown2latex,
-    "markdown2rst": filters.markdown2rst,
+    "markdown2latex": _lazy_filter("markdown2latex"),
+    "markdown2rst": _lazy_filter("markdown2rst"),
     "comment_lines": filters.comment_lines,
     "strip_ansi": filters.strip_ansi,
     "strip_dollars": filters.strip_dollars,

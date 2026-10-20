@@ -8,23 +8,20 @@ markdown within Jinja templates.
 
 import re
 
-from packaging.version import Version
-
 from nbconvert.utils.pandoc import get_pandoc_version
 
-try:
-    from .markdown_mistune import markdown2html_mistune
-
-except ImportError as e:
-    _mistune_import_error = e
-
-    def markdown2html_mistune(source: str) -> str:
-        """mistune is unavailable, raise ImportError"""
-        msg = f"markdown2html requires mistune: {_mistune_import_error}"
-        raise ImportError(msg)
-
-
 from .pandoc import convert_pandoc
+
+
+def markdown2html_mistune(source: str) -> str:
+    """Render markdown to HTML with mistune, importing it on first use."""
+    try:
+        from .markdown_mistune import markdown2html_mistune as _render  # noqa: PLC0415
+    except ImportError as e:
+        msg = f"markdown2html requires mistune: {e}"
+        raise ImportError(msg) from e
+    return _render(source)
+
 
 __all__ = [
     "markdown2asciidoc",
@@ -78,6 +75,8 @@ def markdown2asciidoc(source, extra_args=None):
     # For later versions, we must instead pass --markdown-headings=atx.
     # See https://pandoc.org/releases.html#pandoc-3.0-2023-01-18
     atx_args = ["--atx-headers"]
+    from packaging.version import Version  # noqa: PLC0415
+
     pandoc_version = get_pandoc_version()
     if pandoc_version and Version(pandoc_version) >= Version("3.0"):
         atx_args = ["--markdown-headings=atx"]

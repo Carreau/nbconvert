@@ -4,8 +4,6 @@ Converts links between notebooks to Latex cross-references.
 
 import re
 
-from pandocfilters import RawInline, applyJSONFilters, stringify  # type:ignore[import-untyped]
-
 
 def resolve_references(source):
     """
@@ -14,6 +12,8 @@ def resolve_references(source):
     This expects content in the form of a string encoded JSON object as represented
     internally in ``pandoc``.
     """
+    from pandocfilters import applyJSONFilters  # type:ignore[import-untyped]  # noqa: PLC0415
+
     return applyJSONFilters([resolve_one_reference], source)
 
 
@@ -26,6 +26,8 @@ def resolve_one_reference(key, val, fmt, meta):
     See the documentation in ``pandocfilters.walk()`` for further information on the meaning
     and specification of ``key``, ``val``, ``fmt``, and ``meta``.
     """
+
+    from pandocfilters import RawInline, stringify  # type:ignore[import-untyped]  # noqa: PLC0415
 
     if key == "Link":
         text = stringify(val[1])

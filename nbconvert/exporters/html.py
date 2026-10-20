@@ -12,7 +12,6 @@ from typing import Any, Optional
 
 import jinja2
 import markupsafe
-from bs4 import BeautifulSoup  # type: ignore[import-not-found]
 from jupyter_core.paths import jupyter_path
 from traitlets import Bool, Dict, Unicode, default, validate
 from traitlets.config import Config
@@ -26,7 +25,6 @@ from jinja2.loaders import split_template_path
 from nbformat import NotebookNode
 
 from nbconvert.filters.highlight import Highlight2HTML
-from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
 from nbconvert.filters.widgetsdatatypefilter import WidgetsDataTypeFilter
 from nbconvert.utils.iso639_1 import iso639_1
 
@@ -245,6 +243,11 @@ class HTMLExporter(TemplateExporter):
     @contextfilter
     def markdown2html(self, context, source):
         """Markdown to HTML filter respecting the anchor_link_text setting"""
+        from nbconvert.filters.markdown_mistune import (  # noqa: PLC0415
+            IPythonRenderer,
+            MarkdownWithMath,
+        )
+
         cell = context.get("cell", {})
         attachments = cell.get("attachments", {})
         path = context.get("resources", {}).get("metadata", {}).get("path", "")
@@ -284,6 +287,8 @@ class HTMLExporter(TemplateExporter):
         self.register_filter("highlight_code", highlight_code)
         self.register_filter("filter_data_type", filter_data_type)
         html, resources = super().from_notebook_node(nb, resources, **kw)
+        from bs4 import BeautifulSoup  # type: ignore[import-not-found]  # noqa: PLC0415
+
         soup = BeautifulSoup(html, features="html.parser")
         # Add image's alternative text
         missing_alt = 0

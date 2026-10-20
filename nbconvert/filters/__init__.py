@@ -5,14 +5,6 @@ from .citation import citation2latex
 from .datatypefilter import DataTypeFilter
 from .highlight import Highlight2HTML, Highlight2Latex
 from .latex import escape_latex
-from .markdown import (
-    markdown2asciidoc,
-    markdown2html,
-    markdown2html_mistune,
-    markdown2html_pandoc,
-    markdown2latex,
-    markdown2rst,
-)
 from .metadata import get_metadata
 from .pandoc import ConvertExplicitlyRelativePaths, convert_pandoc
 from .strings import (
@@ -70,3 +62,23 @@ __all__ = [
     "text_base64",
     "wrap_text",
 ]
+
+
+_MARKDOWN_NAMES = {
+    "markdown2asciidoc",
+    "markdown2html",
+    "markdown2html_mistune",
+    "markdown2html_pandoc",
+    "markdown2latex",
+    "markdown2rst",
+}
+
+
+def __getattr__(name):
+    """Lazily provide the markdown filters, so importing this package does not load them."""
+    if name in _MARKDOWN_NAMES:
+        from . import markdown  # noqa: PLC0415
+
+        return getattr(markdown, name)
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
